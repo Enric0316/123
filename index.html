@@ -1200,75 +1200,36 @@ Day 9：上野最後採買 → 前往機場
                     }
 
                     // 關鍵欄位解析：| 管道符號分隔 (伴手禮/特色商品/御守/廁所/醫療)
-                    if (currentDayObj && currentDayObj.spots.length > 0 && (trimmed.includes('|') || trimmed.includes('｜'))) {
-                        const parts = trimmed.split(/[|｜]/).map(p => p.trim());
-                        const tag = parts[0];
+                    if (currentDayObj && currentDayObj.spots.length > 0) {
                         const lastSpot = currentDayObj.spots[currentDayObj.spots.length - 1];
 
-                        const souvenirMatch = trimmed.match(/^\[伴手禮\]\s*(.+)/);
-                        if (souvenirMatch) {
-                            const parts = souvenirMatch[1].split('|').map(p => p.trim());
-                            if (!lastSpot.souvenirs) lastSpot.souvenirs = [];
-                            lastSpot.souvenirs.push({
-                                name: parts[0] || '伴手禮',
-                                emoji: '🎁',
-                                price: parts[1] || '',
-                                desc: parts[2] || ''
-                            });
-                            continue;
-                        }
+                        // 移除前導的 [ ]
+                        let cleanLine = trimmed.replace(/^\[(伴手禮|特色商品|御守|廁所|醫療)\]/, '$1');
+                        if (cleanLine.includes('|') || cleanLine.includes('｜')) {
+                            let parts = cleanLine.split(/[|｜]/).map(p => p.trim());
+                            let tag = parts[0];
 
-                        // [特色商品] 名稱 | 價格 | 說明
-                        const specialMatch = trimmed.match(/^\[特色商品\]\s*(.+)/);
-                        if (specialMatch) {
-                            const parts = specialMatch[1].split('|').map(p => p.trim());
-                            if (!lastSpot.specialties) lastSpot.specialties = [];
-                            lastSpot.specialties.push({
-                                name: parts[0] || '特色商品',
-                                emoji: '⭐',
-                                price: parts[1] || '',
-                                desc: parts[2] || ''
-                            });
-                            continue;
-                        }
-
-                        // [御守] 名稱 | 效用說明 | 價格
-                        const omamoriMatch = trimmed.match(/^\[御守\]\s*(.+)/);
-                        if (omamoriMatch) {
-                            const parts = omamoriMatch[1].split('|').map(p => p.trim());
-                            if (!lastSpot.omamori) lastSpot.omamori = [];
-                            lastSpot.omamori.push({
-                                name: parts[0] || '御守',
-                                emoji: '🪬',
-                                effect: parts[1] || '',
-                                price: parts[2] || ''
-                            });
-                            continue;
-                        }
-
-                        // [廁所] 名稱 | 類型
-                        const toiletMatch = trimmed.match(/^\[廁所\]\s*(.+)/);
-                        if (toiletMatch) {
-                            const parts = toiletMatch[1].split('|').map(p => p.trim());
-                            if (!lastSpot.toilets) lastSpot.toilets = [];
-                            lastSpot.toilets.push({
-                                name: parts[0] || '附近公廁',
-                                type: parts[1] || '公廁'
-                            });
-                            continue;
-                        }
-
-                        // [醫療] 名稱 | 電話 | 類型
-                        const hospitalMatch = trimmed.match(/^\[醫療\]\s*(.+)/);
-                        if (hospitalMatch) {
-                            const parts = hospitalMatch[1].split('|').map(p => p.trim());
-                            if (!lastSpot.hospitals) lastSpot.hospitals = [];
-                            lastSpot.hospitals.push({
-                                name: parts[0] || '附近醫院',
-                                phone: parts[1] || '',
-                                type: parts[2] || '急診'
-                            });
-                            continue;
+                            if (tag === "伴手禮") {
+                                if (!lastSpot.souvenirs) lastSpot.souvenirs = [];
+                                lastSpot.souvenirs.push({ name: parts[1] || '伴手禮', emoji: '🎁', price: parts[2] || '', desc: parts[3] || '' });
+                                continue;
+                            } else if (tag === "特色商品") {
+                                if (!lastSpot.specialties) lastSpot.specialties = [];
+                                lastSpot.specialties.push({ name: parts[1] || '特色商品', emoji: '⭐', price: parts[2] || '', desc: parts[3] || '' });
+                                continue;
+                            } else if (tag === "御守") {
+                                if (!lastSpot.omamori) lastSpot.omamori = [];
+                                lastSpot.omamori.push({ name: parts[1] || '御守', emoji: '🪬', effect: parts[2] || '', price: parts[3] || '' });
+                                continue;
+                            } else if (tag === "廁所") {
+                                if (!lastSpot.toilets) lastSpot.toilets = [];
+                                lastSpot.toilets.push({ name: parts[1] || '附近公廁', type: parts[2] || '公廁' });
+                                continue;
+                            } else if (tag === "醫療") {
+                                if (!lastSpot.hospitals) lastSpot.hospitals = [];
+                                lastSpot.hospitals.push({ name: parts[1] || '附近醫院', phone: parts[2] || '', type: parts[3] || '急診' });
+                                continue;
+                            }
                         }
                     }
 
