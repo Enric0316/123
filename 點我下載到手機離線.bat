@@ -1,5 +1,4 @@
 @echo off
-chcp 65001 >nul
-title å¤¢å¹»æ—…éŠæ‰‹å¸³ - é›¢ç·šä¸‹è¼‰åŠ©æ‰‹
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0ä¸€éµæ‰‹æ©Ÿé›¢ç·šä¸‹è¼‰.ps1"
+chcp 950 >nul
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0¤@Áä¤â¾÷Â÷½u¤U¸ü.ps1"
 pause
