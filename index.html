@@ -568,6 +568,100 @@
         </div>
     </div>
 
+    <!-- ==================== 景點深度詳情 Modal ==================== -->
+    <div id="spotDetailModal" class="fixed inset-0 z-[9998] bg-black/85 backdrop-blur-md hidden flex items-end justify-center sm:items-center p-0 sm:p-4">
+        <div style="background:rgba(15,23,42,0.95);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.08);width:100%;max-width:32rem;max-height:92vh;border-radius:1.5rem 1.5rem 0 0;display:flex;flex-direction:column;overflow:hidden;">
+            <!-- Modal Header -->
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:1rem;border-bottom:1px solid rgba(71,85,105,0.5);flex-shrink:0;">
+                <div style="flex:1;min-width:0;padding-right:0.5rem;">
+                    <div id="sdDayBadge" style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:9999px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);color:#fbbf24;font-size:10px;font-weight:700;margin-bottom:4px;"></div>
+                    <h2 id="sdTitle" style="font-size:1rem;font-weight:900;color:#fff;line-height:1.3;"></h2>
+                    <div id="sdTime" style="font-size:11px;color:#94a3b8;margin-top:2px;display:flex;align-items:center;gap:4px;"><i class="fa-regular fa-clock"></i><span id="sdTimeText"></span></div>
+                </div>
+                <button onclick="closeSpotDetailModal()" style="flex-shrink:0;width:32px;height:32px;border-radius:50%;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:20px;line-height:1;border:none;cursor:pointer;">×</button>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div id="sdTabBar" style="display:flex;border-bottom:1px solid rgba(71,85,105,0.5);flex-shrink:0;overflow-x:auto;scrollbar-width:none;">
+                <button onclick="switchSdTab('intro')"    id="sdTab-intro"    class="sd-tab-active"   style="flex-shrink:0;padding:10px 12px;font-size:11px;font-weight:700;white-space:nowrap;border:none;cursor:pointer;background:transparent;color:#f59e0b;border-bottom:2px solid #f59e0b;">📖 介紹</button>
+                <button onclick="switchSdTab('souvenir')" id="sdTab-souvenir" style="flex-shrink:0;padding:10px 12px;font-size:11px;font-weight:700;white-space:nowrap;border:none;cursor:pointer;background:transparent;color:#64748b;border-bottom:2px solid transparent;">🎁 伴手禮</button>
+                <button onclick="switchSdTab('special')"  id="sdTab-special"  style="flex-shrink:0;padding:10px 12px;font-size:11px;font-weight:700;white-space:nowrap;border:none;cursor:pointer;background:transparent;color:#64748b;border-bottom:2px solid transparent;">⭐ 特色商品</button>
+                <button onclick="switchSdTab('omamori')"  id="sdTab-omamori"  style="flex-shrink:0;padding:10px 12px;font-size:11px;font-weight:700;white-space:nowrap;border:none;cursor:pointer;background:transparent;color:#64748b;border-bottom:2px solid transparent;">🪬 御守</button>
+                <button onclick="switchSdTab('toilet')"   id="sdTab-toilet"   style="flex-shrink:0;padding:10px 12px;font-size:11px;font-weight:700;white-space:nowrap;border:none;cursor:pointer;background:transparent;color:#64748b;border-bottom:2px solid transparent;">🚻 廁所</button>
+                <button onclick="switchSdTab('hospital')" id="sdTab-hospital" style="flex-shrink:0;padding:10px 12px;font-size:11px;font-weight:700;white-space:nowrap;border:none;cursor:pointer;background:transparent;color:#64748b;border-bottom:2px solid transparent;">🏥 醫療</button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div style="overflow-y:auto;flex:1;padding:1rem;-webkit-overflow-scrolling:touch;">
+
+                <!-- 📖 介紹 Panel -->
+                <div id="sdPanel-intro" class="sd-panel" style="display:block;">
+                    <div style="width:100%;height:160px;border-radius:0.75rem;overflow:hidden;background:#1e293b;border:1px solid #334155;margin-bottom:0.75rem;">
+                        <img id="sdImg" style="width:100%;height:100%;object-fit:cover;" src="" alt="">
+                    </div>
+                    <p id="sdDesc" style="color:#cbd5e1;line-height:1.7;font-size:12px;margin-bottom:0.75rem;"></p>
+                    <div id="sdFoodBlock" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:0.75rem;padding:0.75rem;margin-bottom:0.5rem;">
+                        <div style="font-weight:700;color:#f87171;margin-bottom:4px;font-size:11px;"><i class="fa-solid fa-utensils" style="margin-right:4px;"></i>推薦美食 / 亮點</div>
+                        <p id="sdFood" style="color:#fca5a5;font-size:12px;"></p>
+                    </div>
+                    <div id="sdTransitBlock" style="display:none;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:0.75rem;padding:0.75rem;margin-bottom:0.5rem;">
+                        <div style="font-weight:700;color:#fbbf24;margin-bottom:4px;font-size:11px;"><i class="fa-solid fa-route" style="margin-right:4px;"></i>大眾交通路線</div>
+                        <p id="sdTransit" style="color:#fde68a;font-size:12px;"></p>
+                    </div>
+                    <div id="sdRainyBlock" style="display:none;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:0.75rem;padding:0.75rem;">
+                        <div style="font-weight:700;color:#60a5fa;margin-bottom:4px;font-size:11px;"><i class="fa-solid fa-cloud-showers-heavy" style="margin-right:4px;"></i>☔ 雨天備案</div>
+                        <p id="sdRainy" style="color:#93c5fd;font-size:12px;"></p>
+                    </div>
+                </div>
+
+                <!-- 🎁 伴手禮 Panel -->
+                <div id="sdPanel-souvenir" class="sd-panel" style="display:none;">
+                    <div style="color:#94a3b8;font-size:11px;font-weight:700;margin-bottom:0.5rem;display:flex;align-items:center;gap:6px;"><i class="fa-solid fa-bag-shopping" style="color:#f59e0b;"></i>推薦伴手禮 / 必買名物</div>
+                    <div id="sdSouvenirList"></div>
+                    <div id="sdSouvenirEmpty" style="display:none;text-align:center;padding:2rem;color:#475569;"><i class="fa-solid fa-box-open" style="font-size:2rem;display:block;margin-bottom:0.5rem;opacity:0.4;"></i>此景點尚無伴手禮資訊</div>
+                </div>
+
+                <!-- ⭐ 特色商品 Panel -->
+                <div id="sdPanel-special" class="sd-panel" style="display:none;">
+                    <div style="color:#94a3b8;font-size:11px;font-weight:700;margin-bottom:0.5rem;display:flex;align-items:center;gap:6px;"><i class="fa-solid fa-star" style="color:#f59e0b;"></i>當地特色商品 / 限定品</div>
+                    <div id="sdSpecialList"></div>
+                    <div id="sdSpecialEmpty" style="display:none;text-align:center;padding:2rem;color:#475569;"><i class="fa-solid fa-tag" style="font-size:2rem;display:block;margin-bottom:0.5rem;opacity:0.4;"></i>此景點尚無特色商品資訊</div>
+                </div>
+
+                <!-- 🪬 御守 Panel -->
+                <div id="sdPanel-omamori" class="sd-panel" style="display:none;">
+                    <div style="color:#94a3b8;font-size:11px;font-weight:700;margin-bottom:0.5rem;display:flex;align-items:center;gap:6px;"><i class="fa-solid fa-torii-gate" style="color:#f59e0b;"></i>御守 / 限定寺社護身符</div>
+                    <div id="sdOmamoriList"></div>
+                    <div id="sdOmamoriEmpty" style="display:none;text-align:center;padding:2rem;color:#475569;"><i class="fa-solid fa-torii-gate" style="font-size:2rem;display:block;margin-bottom:0.5rem;opacity:0.4;"></i>此景點非神社/寺廟，無御守販售</div>
+                </div>
+
+                <!-- 🚻 廁所 Panel -->
+                <div id="sdPanel-toilet" class="sd-panel" style="display:none;">
+                    <div style="color:#94a3b8;font-size:11px;font-weight:700;margin-bottom:0.5rem;display:flex;align-items:center;gap:6px;"><i class="fa-solid fa-restroom" style="color:#38bdf8;"></i>附近公廁位置</div>
+                    <div id="sdToiletList"></div>
+                    <div id="sdToiletEmpty" style="display:none;text-align:center;padding:2rem;color:#475569;"><i class="fa-solid fa-restroom" style="font-size:2rem;display:block;margin-bottom:0.5rem;opacity:0.4;"></i>此景點尚無廁所資訊</div>
+                </div>
+
+                <!-- 🏥 醫療 Panel -->
+                <div id="sdPanel-hospital" class="sd-panel" style="display:none;">
+                    <div style="color:#94a3b8;font-size:11px;font-weight:700;margin-bottom:0.5rem;display:flex;align-items:center;gap:6px;"><i class="fa-solid fa-hospital" style="color:#f87171;"></i>附近醫療院所 (急診/藥局)</div>
+                    <div id="sdHospitalList"></div>
+                    <div id="sdHospitalEmpty" style="display:none;text-align:center;padding:2rem;color:#475569;"><i class="fa-solid fa-kit-medical" style="font-size:2rem;display:block;margin-bottom:0.5rem;opacity:0.4;"></i>此景點尚無醫療院所資訊</div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div style="padding:0.75rem;border-top:1px solid rgba(71,85,105,0.5);flex-shrink:0;display:flex;gap:0.5rem;padding-bottom:max(0.75rem,env(safe-area-inset-bottom));">
+                <a id="sdGoogleMapLink" href="#" target="_blank" style="flex:1;padding:10px;background:rgba(37,99,235,0.7);color:#fff;border-radius:0.75rem;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;">
+                    <i class="fa-solid fa-location-arrow"></i> Google 地圖導航
+                </a>
+                <button id="sdFocusMapBtn" onclick="closeAndFocusMap()" style="flex:1;padding:10px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);color:#fbbf24;border-radius:0.75rem;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;">
+                    <i class="fa-solid fa-map-pin"></i> 地圖精確定位
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Image Lightbox Modal -->
     <div id="lightboxModal" onclick="closeLightbox()" class="fixed inset-0 z-[10000] bg-black/95 hidden flex flex-col items-center justify-center p-4">
         <span class="absolute top-4 right-6 text-white text-3xl font-bold cursor-pointer">&times;</span>
@@ -2388,10 +2482,13 @@ Day 9：上野最後採買 → 前往機場
                                 <div id="spotPhotoGrid-${dayObj.day}-${index}" class="grid grid-cols-3 gap-2"></div>
                             </div>
 
-                            <div class="pt-2 flex justify-between items-center">
+                            <div class="pt-2 flex flex-wrap gap-2 items-center">
                                 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.title)}" target="_blank" class="px-3 py-1.5 bg-blue-600/80 hover:bg-blue-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 shadow">
                                     <i class="fa-solid fa-location-arrow"></i> Google 地圖導航
                                 </a>
+                                <button onclick="openSpotDetailModal(${dayObj.day}, ${index})" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:brightness-110 text-slate-950 rounded-lg text-xs font-black flex items-center gap-1.5 shadow transition">
+                                    <i class="fa-solid fa-book-open"></i> 📖 深入介紹
+                                </button>
                                 <button onclick="openPhotoModal(${dayObj.day}, ${index}, '${spot.title.replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-amber-500/20 border border-amber-500/40 text-amber-300 rounded-lg text-xs font-bold flex items-center gap-1.5 hover:bg-amber-500/30 transition">
                                     <i class="fa-solid fa-camera"></i> 📷 拍照 / 紀錄心得
                                 </button>
@@ -2830,6 +2927,161 @@ Day 9：上野最後採買 → 前往機場
 
         function closeLightbox() {
             document.getElementById('lightboxModal').classList.add('hidden');
+        }
+
+        // ===== 景點深度詳情 Modal =====
+        let _sdCurrentLat = null, _sdCurrentLng = null, _sdCurrentTitle = '';
+
+        function openSpotDetailModal(day, spotIdx) {
+            const dayObj = tourData.find(d => d.day === parseInt(day));
+            if (!dayObj) return;
+            const spot = dayObj.spots[spotIdx];
+            if (!spot) return;
+
+            // 記錄座標供地圖定位用
+            _sdCurrentLat = spot.lat;
+            _sdCurrentLng = spot.lng;
+            _sdCurrentTitle = spot.title;
+
+            // 填入 Header
+            document.getElementById('sdDayBadge').textContent = `Day ${day} · 景點 ${spotIdx + 1}`;
+            document.getElementById('sdTitle').textContent = spot.title;
+            document.getElementById('sdTimeText').textContent = spot.time || '';
+
+            // 填入 Google Map 連結
+            document.getElementById('sdGoogleMapLink').href =
+                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.title)}`;
+
+            // --- 介紹 Tab ---
+            let imgUrl = spot.img || getAutoCategoryPhoto(spot.category);
+            document.getElementById('sdImg').src = imgUrl;
+            document.getElementById('sdImg').onerror = function() {
+                this.src = getAutoCategoryPhoto(spot.category);
+            };
+            document.getElementById('sdDesc').textContent = spot.desc || '';
+
+            const foodBlock = document.getElementById('sdFoodBlock');
+            if (spot.food) { foodBlock.style.display = 'block'; document.getElementById('sdFood').textContent = spot.food; }
+            else { foodBlock.style.display = 'none'; }
+
+            const transitBlock = document.getElementById('sdTransitBlock');
+            if (spot.transit) { transitBlock.style.display = 'block'; document.getElementById('sdTransit').textContent = spot.transit; }
+            else { transitBlock.style.display = 'none'; }
+
+            const rainyBlock = document.getElementById('sdRainyBlock');
+            if (spot.rainyPlan) { rainyBlock.style.display = 'block'; document.getElementById('sdRainy').textContent = spot.rainyPlan; }
+            else { rainyBlock.style.display = 'none'; }
+
+            // --- 伴手禮 Tab ---
+            renderSdList('sdSouvenirList', 'sdSouvenirEmpty', spot.souvenirs, item =>
+                `<div style="background:#1e293b;border:1px solid rgba(245,158,11,0.2);border-radius:0.75rem;padding:0.75rem;display:flex;gap:0.75rem;align-items:flex-start;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:rgba(245,158,11,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${item.emoji || '🎁'}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:700;color:#f8fafc;font-size:12px;">${item.name}</div>
+                        ${item.price ? `<div style="color:#f59e0b;font-size:11px;margin-top:2px;">💴 ${item.price}</div>` : ''}
+                        ${item.desc ? `<div style="color:#94a3b8;font-size:11px;margin-top:2px;line-height:1.5;">${item.desc}</div>` : ''}
+                    </div>
+                </div>`
+            );
+
+            // --- 特色商品 Tab ---
+            renderSdList('sdSpecialList', 'sdSpecialEmpty', spot.specialties, item =>
+                `<div style="background:#1e293b;border:1px solid rgba(168,85,247,0.2);border-radius:0.75rem;padding:0.75rem;display:flex;gap:0.75rem;align-items:flex-start;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${item.emoji || '⭐'}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:700;color:#f8fafc;font-size:12px;">${item.name}</div>
+                        ${item.price ? `<div style="color:#c084fc;font-size:11px;margin-top:2px;">💴 ${item.price}</div>` : ''}
+                        ${item.desc ? `<div style="color:#94a3b8;font-size:11px;margin-top:2px;line-height:1.5;">${item.desc}</div>` : ''}
+                    </div>
+                </div>`
+            );
+
+            // --- 御守 Tab ---
+            renderSdList('sdOmamoriList', 'sdOmamoriEmpty', spot.omamori, item =>
+                `<div style="background:#1e293b;border:1px solid rgba(16,185,129,0.2);border-radius:0.75rem;padding:0.75rem;display:flex;gap:0.75rem;align-items:flex-start;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${item.emoji || '🪬'}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:700;color:#f8fafc;font-size:12px;">${item.name}</div>
+                        ${item.effect ? `<div style="color:#34d399;font-size:11px;margin-top:2px;">✨ ${item.effect}</div>` : ''}
+                        ${item.price ? `<div style="color:#6ee7b7;font-size:11px;margin-top:2px;">💴 ${item.price}</div>` : ''}
+                    </div>
+                </div>`
+            );
+
+            // --- 廁所 Tab ---
+            renderSdList('sdToiletList', 'sdToiletEmpty', spot.toilets, item =>
+                `<div style="background:#1e293b;border:1px solid rgba(56,189,248,0.2);border-radius:0.75rem;padding:0.75rem;display:flex;gap:0.75rem;align-items:center;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:rgba(56,189,248,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🚻</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:700;color:#f8fafc;font-size:12px;">${item.name}</div>
+                        ${item.type ? `<div style="color:#38bdf8;font-size:11px;margin-top:2px;">類型：${item.type}</div>` : ''}
+                    </div>
+                </div>`
+            );
+
+            // --- 醫療 Tab ---
+            renderSdList('sdHospitalList', 'sdHospitalEmpty', spot.hospitals, item =>
+                `<div style="background:#1e293b;border:1px solid rgba(248,113,113,0.2);border-radius:0.75rem;padding:0.75rem;display:flex;gap:0.75rem;align-items:flex-start;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:rgba(248,113,113,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🏥</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:700;color:#f8fafc;font-size:12px;">${item.name}</div>
+                        ${item.type ? `<div style="color:#fca5a5;font-size:11px;margin-top:2px;">${item.type}</div>` : ''}
+                        ${item.phone ? `<a href="tel:${item.phone}" style="display:inline-flex;align-items:center;gap:4px;color:#f87171;font-size:11px;margin-top:4px;font-weight:700;text-decoration:none;"><i class="fa-solid fa-phone"></i> ${item.phone}</a>` : ''}
+                    </div>
+                </div>`
+            );
+
+            // 重設 Tab 到介紹
+            switchSdTab('intro');
+
+            // 顯示 Modal
+            document.getElementById('spotDetailModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function renderSdList(listId, emptyId, items, renderFn) {
+            const listEl = document.getElementById(listId);
+            const emptyEl = document.getElementById(emptyId);
+            listEl.innerHTML = '';
+            if (!items || items.length === 0) {
+                emptyEl.style.display = 'block';
+            } else {
+                emptyEl.style.display = 'none';
+                items.forEach(item => {
+                    const div = document.createElement('div');
+                    div.innerHTML = renderFn(item);
+                    listEl.appendChild(div.firstElementChild);
+                });
+            }
+        }
+
+        function switchSdTab(tabName) {
+            const tabs = ['intro','souvenir','special','omamori','toilet','hospital'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`sdTab-${t}`);
+                const panel = document.getElementById(`sdPanel-${t}`);
+                if (t === tabName) {
+                    btn.style.color = '#f59e0b';
+                    btn.style.borderBottom = '2px solid #f59e0b';
+                    panel.style.display = 'block';
+                } else {
+                    btn.style.color = '#64748b';
+                    btn.style.borderBottom = '2px solid transparent';
+                    panel.style.display = 'none';
+                }
+            });
+        }
+
+        function closeSpotDetailModal() {
+            document.getElementById('spotDetailModal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function closeAndFocusMap() {
+            closeSpotDetailModal();
+            if (_sdCurrentLat && _sdCurrentLng) {
+                focusSpotOnMap(_sdCurrentLat, _sdCurrentLng);
+            }
         }
 
         function switchTab(tabId) {

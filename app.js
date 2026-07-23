@@ -28,6 +28,16 @@ const PRESET_NAGOYA_TRIP = {
           lat: 34.8583,
           lng: 136.8053,
           img: "https://upload.wikimedia.org/wikipedia/commons/e/ed/Chubu_Central_Airport_aerial_view.jpg",
+          souvenirs: [
+            { name: "蝦餅仙貝 (海老煎餅)", emoji: "🦐", price: "¥ 800", desc: "名古屋名物，機場限定口味，酥脆鮮甜是台灣人必帶伴手禮首選" },
+            { name: "風來坊炸雞翅 (辛口醬)", emoji: "🍗", price: "¥ 1,500", desc: "真空包裝，方便帶回台灣，辣味鹹香令人上癮" },
+            { name: "昇龍道周遊券紀念品袋", emoji: "🎌", price: "免費", desc: "兌換 Pass 時贈送，精美日本傳統紋樣提袋" }
+          ],
+          specialties: [
+            { name: "μ-SKY 名鐵特急限定", emoji: "🚄", price: "¥ 1,200 (指定席)", desc: "全日本少數外觀為金屬銀色的時尚特急電車，車廂舒適寬敞" },
+            { name: "Centrair 神社限定御守", emoji: "🛫", price: "¥ 500", desc: "機場頂樓有小型航空神社，提供旅途平安御守" }
+          ],
+          omamori: [],
           toilets: [
             { name: "Centrair 第一航廈 2F 到達大廳公廁", type: "多功能/無障礙" }
           ],
@@ -46,6 +56,19 @@ const PRESET_NAGOYA_TRIP = {
           lat: 35.3883,
           lng: 136.9392,
           img: "https://upload.wikimedia.org/wikipedia/commons/f/fc/Inuyama_Castle_2010.jpg",
+          souvenirs: [
+            { name: "犬山城天守限定手拭巾", emoji: "🏯", price: "¥ 1,200", desc: "城中限定，印有犬山城輪廓與國寶認定印，質感優良" },
+            { name: "犬山城下町 五平餅", emoji: "🍡", price: "¥ 300", desc: "現烤甜味噌塗抹糯米棒，古街散步必吃名物" },
+            { name: "飛驒牛大福", emoji: "🍡", price: "¥ 600 / 3入", desc: "季節限定和菓子，外皮軟糯、內餡甘甜，適合帶回台灣」 }
+          ],
+          specialties: [
+            { name: "犬山城下町 手造陶器", emoji: "🏺", price: "¥ 2,000起", desc: "城下町有多間傳統陶藝工房，可現場挑選有田燒紀念品" },
+            { name: "犬山限定御城印", emoji: "📜", price: "¥ 300", desc: "近年日本各城流行的「御城印」（城版御朱印），犬山城版本十分精美" }
+          ],
+          omamori: [
+            { name: "三光稻荷神社 戀愛成就御守", emoji: "🪬", effect: "戀愛成就・緣份結良緣", price: "¥ 500" },
+            { name: "針綱神社 武運長久守", emoji: "⛩️", effect: "出行平安・武運強健", price: "¥ 800" }
+          ],
           toilets: [
             { name: "犬山城登城口觀光案內所公廁", type: "公廁" }
           ],
@@ -64,6 +87,16 @@ const PRESET_NAGOYA_TRIP = {
           lat: 35.1709,
           lng: 136.9083,
           img: "https://upload.wikimedia.org/wikipedia/commons/6/6b/Oasis21_Nagoya_01.jpg",
+          souvenirs: [
+            { name: "矢場豚味噌豬排醬 (瓶裝)", emoji: "🫙", price: "¥ 1,000", desc: "赤味噌醬汁帶回家自己炸豬排，是最受歡迎的名古屋伴手禮之一" },
+            { name: "Oasis 21 限定提袋", emoji: "🛍️", price: "免費/消費滿送", desc: "「水的宇宙船」文創設計提袋，充滿現代感的名古屋 Icon" },
+            { name: "名古屋電視塔模型", emoji: "🗼", price: "¥ 1,500", desc: "名古屋地標紀念品，塔內官方商店限定款，精緻小巧" }
+          ],
+          specialties: [
+            { name: "矢場豚 本家全套套餐", emoji: "🍽️", price: "¥ 2,000起", desc: "現場享用才能嚐到最道地的味噌炸豬排，附白飯無限續碗" },
+            { name: "Oasis 21 頂層天空步道票", emoji: "🚀", price: "免費參觀", desc: "玻璃步道夜間燈光秀免費欣賞，建議晚上19:00後造訪」 }
+          ],
+          omamori: [],
           toilets: [
             { name: "Oasis 21 地下商場公廁 (B1)", type: "無障礙潔淨" }
           ],
