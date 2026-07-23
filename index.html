@@ -448,6 +448,25 @@
                     </p>
                 </div>
 
+                <!-- iCloud 備份與還原 -->
+                <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-amber-300">iCloud 備份與還原 (全量行程)：</span>
+                        <div class="flex gap-2">
+                            <button onclick="exportToiCloud()" class="px-2.5 py-1 bg-emerald-600/30 text-emerald-300 hover:bg-emerald-600 hover:text-white rounded-lg font-bold text-[11px] border border-emerald-500/30 transition">
+                                <i class="fa-solid fa-cloud-arrow-down mr-1"></i>導出備份檔
+                            </button>
+                            <button onclick="triggerBackupFileInput()" class="px-2.5 py-1 bg-indigo-600/30 text-indigo-300 hover:bg-indigo-600 hover:text-white rounded-lg font-bold text-[11px] border border-indigo-500/30 transition">
+                                <i class="fa-solid fa-cloud-arrow-up mr-1"></i>匯入備份檔
+                            </button>
+                        </div>
+                    </div>
+                    <input type="file" id="backupFileInput" accept=".json" class="hidden" onchange="importFromiCloud(event)">
+                    <p class="text-[10px] text-slate-400 leading-relaxed">
+                        💾 導出後可將 JSON 備份檔存入 iCloud 雲碟。匯入會覆蓋目前本地所有的行程。
+                    </p>
+                </div>
+
                 <input type="file" id="jsonFileInput" accept=".json,text/plain" class="hidden" onchange="handleJsonFileRead(event)">
 
                 <!-- 貼上文字輸入框 -->
@@ -782,7 +801,7 @@
     </div>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 inset-x-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800" style="padding-top:8px;padding-bottom:max(8px,env(safe-area-inset-bottom));">
+    <nav id="bottomNavBar" class="fixed bottom-0 inset-x-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 hidden" style="padding-top:8px;padding-bottom:max(8px,env(safe-area-inset-bottom));">
         <div class="max-w-xl mx-auto flex justify-around text-center">
             <button onclick="showHomeHubView()" id="navBtnHome" class="text-amber-400 flex flex-col items-center gap-1">
                 <i class="fa-solid fa-house text-lg"></i>
@@ -930,14 +949,46 @@
         }
 
         function loadToolkitData() {
-            const saved = localStorage.getItem("travel_toolkit_data");
-            if (saved) {
-                try { toolkitData = JSON.parse(saved); } catch(e) {}
+            const trip = getActiveTripObj();
+            if (trip) {
+                if (trip.toolkitData) {
+                    toolkitData = trip.toolkitData;
+                    return;
+                }
+                const saved = localStorage.getItem(`travel_toolkit_data_${trip.id}`);
+                if (saved) {
+                    try {
+                        trip.toolkitData = JSON.parse(saved);
+                        toolkitData = trip.toolkitData;
+                        return;
+                    } catch(e) {}
+                }
+                if (trip.id === PRESET_NAGOYA_TRIP.id) {
+                    const savedGlobal = localStorage.getItem("travel_toolkit_data");
+                    if (savedGlobal) {
+                        try {
+                            trip.toolkitData = JSON.parse(savedGlobal);
+                            toolkitData = trip.toolkitData;
+                            return;
+                        } catch(e) {}
+                    }
+                }
+                trip.toolkitData = { expenses: [], shopping: [], packing: [] };
+                toolkitData = trip.toolkitData;
+            } else {
+                toolkitData = { expenses: [], shopping: [], packing: [] };
             }
         }
 
         function saveToolkitData() {
-            localStorage.setItem("travel_toolkit_data", JSON.stringify(toolkitData));
+            const trip = getActiveTripObj();
+            if (trip) {
+                trip.toolkitData = toolkitData;
+                saveTrips();
+                localStorage.setItem(`travel_toolkit_data_${trip.id}`, JSON.stringify(toolkitData));
+            } else {
+                localStorage.setItem("travel_toolkit_data", JSON.stringify(toolkitData));
+            }
         }
 
         function triggerDirectSpotPhotoSwap(day, spotIdx) {
@@ -1318,6 +1369,55 @@ Day 9：上野最後採買 → 前往機場
                 prompt("請複製以下行程碼分享給好友：", tripJsonStr);
             });
         }
+
+        // --- iCloud 全量備份導出與還原 ---
+        function exportToiCloud() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allTrips, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `nagoya_travel_backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+
+            alert("🎉 全量備份檔案已成功下載！\n您可將此 JSON 檔案上傳並保存至您手機或電腦的 iCloud 雲碟中。");
+        }
+
+        function triggerBackupFileInput() {
+            document.getElementById('backupFileInput').click();
+        }
+
+        function importFromiCloud(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const imported = JSON.parse(evt.target.result);
+                    if (Array.isArray(imported) && imported.length > 0) {
+                        if (confirm("⚠️ 匯入備份檔將覆蓋您目前所有的行程資料，確定要繼續嗎？")) {
+                            allTrips = imported;
+                            activeTripId = allTrips[0].id;
+                            saveTrips();
+                            renderHomePlanCards();
+                            updateActiveTripData();
+                            showHomeHubView();
+                            closeBatchImportModal();
+                            alert("🎉 成功匯入全量行程備份！已完全還原您的旅遊手帳。");
+                        }
+                    } else {
+                        alert("格式不符，請確認是否為正確的旅遊手帳 JSON 備份檔。");
+                    }
+                } catch (err) {
+                    alert("讀取備份檔失敗：" + err.message);
+                }
+            };
+            reader.readAsText(file);
+            // 重設 input 讓同一個檔案可以重複選取觸發
+            e.target.value = '';
+        }
+
 
         // 預設 1：2026 名古屋・昇龍道 9日夢幻旅行
         const PRESET_NAGOYA_TRIP = {
@@ -1940,6 +2040,7 @@ Day 9：上野最後採買 → 前往機場
         function updateActiveTripData() {
             const trip = getActiveTripObj();
             tourData = trip.days || [];
+            loadToolkitData();
         }
 
         // 切換回「計畫總覽首頁」
@@ -1948,6 +2049,7 @@ Day 9：上野最後採買 → 前往機場
             document.getElementById('itineraryView').classList.add('hidden');
             document.getElementById('memorialView').classList.add('hidden');
             document.getElementById('toolkitView').classList.add('hidden');
+            document.getElementById('bottomNavBar').classList.add('hidden');
             
             document.getElementById('appHeaderTitle').innerText = "我的旅遊計畫首頁";
             document.getElementById('btnBackHome').classList.add('hidden');
@@ -1975,6 +2077,7 @@ Day 9：上野最後採買 → 前往機場
             document.getElementById('memorialView').classList.add('hidden');
             document.getElementById('toolkitView').classList.add('hidden');
             document.getElementById('itineraryView').classList.remove('hidden');
+            document.getElementById('bottomNavBar').classList.remove('hidden');
 
             document.getElementById('btnBackHome').classList.remove('hidden');
             document.getElementById('daySelectorWrapper').classList.remove('hidden');
@@ -2784,7 +2887,7 @@ Day 9：上野最後採買 → 前往機場
                 }
             }
 
-            const spotKey = `day-${day}-spot-${spotIdx}`;
+            const spotKey = `${activeTripId}-day-${day}-spot-${spotIdx}`;
             const dayObj = tourData.find(d => d.day === day);
             const spotTitle = dayObj ? dayObj.spots[spotIdx].title : '';
 
@@ -2795,6 +2898,7 @@ Day 9：上野最後採買 → 前往機場
 
                     for (let imgData of tempBase64Images) {
                         store.add({
+                            tripId: activeTripId,
                             spotKey: spotKey,
                             day: day,
                             spotIdx: spotIdx,
@@ -2826,34 +2930,48 @@ Day 9：上野最後採買 → 前往機場
         function loadSpotPhotos(day, spotIdx) {
             if (!photoDB) return;
             try {
-                const spotKey = `day-${day}-spot-${spotIdx}`;
+                const spotKey = `${activeTripId}-day-${day}-spot-${spotIdx}`;
                 const tx = photoDB.transaction('photos', 'readonly');
                 const store = tx.objectStore('photos');
                 const index = store.index('spotKey');
                 const request = index.getAll(spotKey);
 
                 request.onsuccess = function() {
-                    const photos = request.result;
-                    const container = document.getElementById(`spotPhotosContainer-${day}-${spotIdx}`);
-                    const grid = document.getElementById(`spotPhotoGrid-${day}-${spotIdx}`);
-
-                    if (!container || !grid) return;
-
-                    if (photos && photos.length > 0) {
-                        grid.innerHTML = '';
-                        photos.forEach(p => {
-                            const img = document.createElement('img');
-                            img.src = p.image;
-                            img.className = 'w-full h-20 object-cover rounded-lg border border-amber-500/40 cursor-pointer shadow hover:scale-105 transition';
-                            img.onclick = () => openLightbox(p.image, `${p.spotTitle} - ${p.note || ''}`);
-                            grid.appendChild(img);
-                        });
-                        container.classList.remove('hidden');
+                    let photos = request.result;
+                    
+                    // 備份相容：如果目前是預設的名古屋行程，且找不到新首碼相片，讀取無 prefix 的舊相片
+                    if ((!photos || photos.length === 0) && activeTripId === 'nagoya-2026-9day') {
+                        const oldSpotKey = `day-${day}-spot-${spotIdx}`;
+                        const oldRequest = index.getAll(oldSpotKey);
+                        oldRequest.onsuccess = function() {
+                            renderSpotPhotosGrid(oldRequest.result, day, spotIdx);
+                        };
                     } else {
-                        container.classList.add('hidden');
+                        renderSpotPhotosGrid(photos, day, spotIdx);
                     }
                 };
             } catch(e) {}
+        }
+
+        function renderSpotPhotosGrid(photos, day, spotIdx) {
+            const container = document.getElementById(`spotPhotosContainer-${day}-${spotIdx}`);
+            const grid = document.getElementById(`spotPhotoGrid-${day}-${spotIdx}`);
+
+            if (!container || !grid) return;
+
+            if (photos && photos.length > 0) {
+                grid.innerHTML = '';
+                photos.forEach(p => {
+                    const img = document.createElement('img');
+                    img.src = p.image;
+                    img.className = 'w-full h-20 object-cover rounded-lg border border-amber-500/40 cursor-pointer shadow hover:scale-105 transition';
+                    img.onclick = () => openLightbox(p.image, `${p.spotTitle} - ${p.note || ''}`);
+                    grid.appendChild(img);
+                });
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
         }
 
         function renderMemorialGallery() {
@@ -2865,7 +2983,15 @@ Day 9：上野最後採買 → 前往機場
                 const request = store.getAll();
 
                 request.onsuccess = function() {
-                    const photos = request.result;
+                    const allPhotos = request.result;
+                    
+                    // 篩選出屬於目前行程的照片
+                    const photos = allPhotos.filter(p => {
+                        return p.tripId === activeTripId || 
+                               p.spotKey.startsWith(activeTripId + '-') ||
+                               (!p.tripId && p.spotKey.startsWith('day-') && activeTripId === 'nagoya-2026-9day');
+                    });
+
                     if (!photos || photos.length === 0) {
                         gallery.innerHTML = `
                             <div class="text-center py-12 text-slate-500 text-xs">
@@ -2896,6 +3022,7 @@ Day 9：上野最後採買 → 前往機場
 
         // ==================== 達人工具邏輯 (分帳、購物、打包) ====================
         function renderToolkitUI() {
+            loadToolkitData();
             const expContainer = document.getElementById('expenseListContainer');
             expContainer.innerHTML = '';
             let totalJpy = 0, totalTwd = 0;
