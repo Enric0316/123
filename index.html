@@ -1800,8 +1800,12 @@ Day 9：上野最後採買 → 前往機場
                 if (mapInstance) {
                     mapInstance.invalidateSize();
                     updateMap();
+                    // 二次確保 fitBounds 在 DOM 穩定後套用
+                    setTimeout(() => {
+                        if (mapInstance) mapInstance.invalidateSize();
+                    }, 400);
                 }
-            }, 250);
+            }, 300);
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -2141,6 +2145,19 @@ Day 9：上野最後採買 → 前往機場
             });
         };
 
+        // 每天配色（全部顯示時，不同天用不同顏色以便辨識）
+        const DAY_COLORS = [
+            { bg: 'linear-gradient(135deg,#f59e0b,#d97706)', fg: '#0f172a' },
+            { bg: 'linear-gradient(135deg,#3b82f6,#2563eb)', fg: '#ffffff' },
+            { bg: 'linear-gradient(135deg,#22c55e,#16a34a)', fg: '#0f172a' },
+            { bg: 'linear-gradient(135deg,#ef4444,#dc2626)', fg: '#ffffff' },
+            { bg: 'linear-gradient(135deg,#a855f7,#9333ea)', fg: '#ffffff' },
+            { bg: 'linear-gradient(135deg,#ec4899,#db2777)', fg: '#ffffff' },
+            { bg: 'linear-gradient(135deg,#06b6d4,#0891b2)', fg: '#0f172a' },
+            { bg: 'linear-gradient(135deg,#84cc16,#65a30d)', fg: '#0f172a' },
+            { bg: 'linear-gradient(135deg,#f97316,#ea580c)', fg: '#ffffff' },
+        ];
+
         function initMap() {
             mapInstance = L.map('map', {
                 zoomControl: true,
@@ -2169,27 +2186,45 @@ Day 9：上野最後採買 → 前往機場
 
             let allPoints = [];
             let bounds = L.latLngBounds();
+            const showAll = (currentDay === 'all');
 
-            displayDays.forEach(dayObj => {
-                dayObj.spots.forEach((spot, index) => {
+            displayDays.forEach((dayObj, dayIdx) => {
+                const colorScheme = DAY_COLORS[(dayIdx) % DAY_COLORS.length];
+                const dayPolyPoints = [];
+
+                dayObj.spots.forEach((spot, spotIdx) => {
                     if (spot.lat && spot.lng) {
                         let pt = [spot.lat, spot.lng];
                         allPoints.push(pt);
+                        dayPolyPoints.push(pt);
                         bounds.extend(pt);
+
+                        // 點位編號：顯示全部時用「D1」「D2」，單天時用「1-1」「1-2」格式
+                        const labelText = showAll
+                            ? `D${dayObj.day}`
+                            : `${dayObj.day}-${spotIdx + 1}`;
+
+                        // 全部顯示：各天不同顏色；單天顯示：固定黃金色
+                        const bgColor = showAll ? colorScheme.bg : 'linear-gradient(135deg,#f59e0b,#d97706)';
+                        const fgColor = showAll ? colorScheme.fg : '#0f172a';
+
+                        // 全部顯示時圓點稍大以容納 D1 文字；單天時標準大小
+                        const size = showAll ? 30 : 28;
+                        const fontSize = showAll ? '10px' : '11px';
 
                         let customIcon = L.divIcon({
                             className: 'custom-map-pin',
-                            html: `<div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; font-weight: 900; font-size: 11px; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">${index + 1}</div>`,
-                            iconSize: [26, 26],
-                            iconAnchor: [13, 13]
+                            html: `<div style="background:${bgColor};color:${fgColor};font-weight:900;font-size:${fontSize};width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #ffffff;box-shadow:0 4px 12px rgba(0,0,0,0.55);white-space:nowrap;">${labelText}</div>`,
+                            iconSize: [size, size],
+                            iconAnchor: [size/2, size/2]
                         });
 
                         let marker = L.marker(pt, { icon: customIcon }).addTo(mapInstance);
                         marker.bindPopup(`
-                            <div class="text-xs space-y-1 font-sans">
-                                <div class="font-black text-amber-400">Day ${dayObj.day}：${spot.title}</div>
-                                <div class="text-slate-300 text-[10px]"><i class="fa-regular fa-clock mr-1"></i>${spot.time}</div>
-                                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.title)}" target="_blank" class="inline-block mt-1 bg-amber-500 text-slate-950 px-2 py-0.5 rounded text-[10px] font-bold">Google地圖導航</a>
+                            <div style="font-size:12px;line-height:1.6;">
+                                <div style="font-weight:900;color:#f59e0b;margin-bottom:3px;">Day ${dayObj.day}・景點 ${spotIdx+1}：${spot.title}</div>
+                                <div style="color:#94a3b8;font-size:10px;"><i class="fa-regular fa-clock" style="margin-right:4px;"></i>${spot.time || ''}</div>
+                                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.title)}" target="_blank" style="display:inline-block;margin-top:5px;background:#f59e0b;color:#0f172a;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:bold;">Google地圖導航</a>
                             </div>
                         `);
 
@@ -2201,25 +2236,35 @@ Day 9：上野最後採買 → 前往機場
             if (allPoints.length > 1) {
                 currentPolyline = L.polyline(allPoints, {
                     color: '#f59e0b',
-                    weight: 4,
-                    opacity: 0.8,
+                    weight: 3,
+                    opacity: 0.75,
                     dashArray: '8, 8'
                 }).addTo(mapInstance);
             }
 
             if (allPoints.length > 0) {
-                if (currentDay === 'all') {
-                    mapInstance.fitBounds(bounds, { padding: [30, 30] });
+                if (showAll) {
+                    // 確保 bounds 有效後再 fitBounds，避免顯示不全
+                    if (bounds.isValid()) {
+                        setTimeout(() => {
+                            mapInstance.invalidateSize();
+                            mapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+                        }, 100);
+                    }
                 } else {
-                    mapInstance.setView(allPoints[0], 14, { animate: true });
+                    if (bounds.isValid()) {
+                        mapInstance.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+                    } else {
+                        mapInstance.setView(allPoints[0], 14, { animate: true });
+                    }
                 }
             }
 
             let bannerText = document.getElementById('trajectoryText');
-            if (currentDay === 'all') {
-                bannerText.innerText = displayDays.map(d => d.spots[0]?.title || `Day ${d.day}`).join(" ➔ ");
+            if (showAll) {
+                bannerText.innerText = displayDays.map(d => `D${d.day} ${d.spots[0]?.title?.split(' ')[0] || ''}`).join(' ➔ ');
             } else if (displayDays.length > 0) {
-                bannerText.innerText = displayDays[0].trajectory || displayDays[0].spots.map(s => s.title.split(' ')[0]).join(" ➔ ");
+                bannerText.innerText = displayDays[0].trajectory || displayDays[0].spots.map(s => s.title.split(' ')[0]).join(' ➔ ');
             }
         }
 
