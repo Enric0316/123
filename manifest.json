@@ -1,0 +1,17 @@
+{
+  "name": "2026 名古屋・昇龍道 9日夢幻旅行導覽",
+  "short_name": "名古屋9日遊",
+  "description": "離線版 2026 名古屋・昇龍道 9日夢幻旅行導覽與紀念冊",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b0f19",
+  "theme_color": "#0b0f19",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
