@@ -192,7 +192,7 @@
         ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
     </style>
 </head>
-<body class="pb-24">
+<body class="pb-28">
 
     <!-- Top App Header Bar -->
     <header class="sticky top-0 z-40 bg-slate-950/95 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 shadow-xl">
@@ -688,7 +688,7 @@
     </div>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 inset-x-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 py-2">
+    <nav class="fixed bottom-0 inset-x-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800" style="padding-top:8px;padding-bottom:max(8px,env(safe-area-inset-bottom));">
         <div class="max-w-xl mx-auto flex justify-around text-center">
             <button onclick="showHomeHubView()" id="navBtnHome" class="text-amber-400 flex flex-col items-center gap-1">
                 <i class="fa-solid fa-house text-lg"></i>
@@ -2233,14 +2233,30 @@ Day 9：上野最後採買 → 前往機場
                 });
             });
 
-            if (allPoints.length > 1) {
-                currentPolyline = L.polyline(allPoints, {
-                    color: '#f59e0b',
-                    weight: 3,
-                    opacity: 0.75,
-                    dashArray: '8, 8'
-                }).addTo(mapInstance);
-            }
+            // 每天畫一條對應顏色的路線（同天景點才連、不跨天亂連）
+            displayDays.forEach((dayObj, dayIdx) => {
+                const colorScheme = DAY_COLORS[dayIdx % DAY_COLORS.length];
+                // 提取純色不含 gradient（Leaflet polyline 不支援 CSS gradient）
+                const lineColors = [
+                    '#f59e0b','#3b82f6','#22c55e','#ef4444',
+                    '#a855f7','#ec4899','#06b6d4','#84cc16','#f97316'
+                ];
+                const lineColor = lineColors[dayIdx % lineColors.length];
+                const dayPts = dayObj.spots
+                    .filter(s => s.lat && s.lng)
+                    .map(s => [s.lat, s.lng]);
+                if (dayPts.length > 1) {
+                    const poly = L.polyline(dayPts, {
+                        color: lineColor,
+                        weight: 4,
+                        opacity: 0.85,
+                        lineJoin: 'round',
+                        lineCap: 'round'
+                    }).addTo(mapInstance);
+                    // 將每天 polyline 也存入 currentMarkers 方便清理
+                    currentMarkers.push(poly);
+                }
+            });
 
             if (allPoints.length > 0) {
                 if (showAll) {
