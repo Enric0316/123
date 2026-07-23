@@ -1,4 +1,4 @@
-@echo off
-chcp 950 >nul
-powershell.exe -ExecutionPolicy Bypass -File "%~dp0±Ò°Ê¨p±K¦øªA¾¹.ps1"
-pause
+ï»¿@echo off
+chcp 65001 >nul
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0å•Ÿå‹•ç§å¯†ä¼ºæœå™¨.ps1"
+timeout /t 3
