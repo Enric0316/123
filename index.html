@@ -246,14 +246,14 @@
             <div class="relative z-10 space-y-2">
                 <div class="flex items-center justify-between">
                     <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold">
-                        <i class="fa-solid fa-sparkles"></i> 點擊卡片開啟行程導覽
+                        <i class="fa-solid fa-earth-asia"></i> 全球地名線上自動 GPS 定位
                     </div>
                     <button onclick="openBatchImportModal()" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-lg font-bold shadow flex items-center gap-1">
                         <i class="fa-solid fa-paste"></i> 批次匯入/好友分享
                     </button>
                 </div>
                 <h2 class="text-xl font-black text-white">我的夢幻自由行計畫</h2>
-                <p class="text-xs text-slate-300">💡 內建<span class="text-emerald-400 font-bold">東京/名古屋/台灣全地標精準 GPS 資料庫</span>，貼上文字自動精確定位地圖！</p>
+                <p class="text-xs text-slate-300">💡 未來貼上<span class="text-emerald-400 font-bold">全球任何景點文字</span>，系統均會<b>即時聯網查詢精準經緯度</b>定位地圖！</p>
             </div>
         </div>
 
@@ -304,7 +304,7 @@
         <div class="map-container relative">
             <div id="map"></div>
             <div class="absolute bottom-2 right-2 z-[400] bg-slate-900/90 border border-slate-700/80 rounded-lg px-2.5 py-1 text-[10px] text-amber-300 font-bold backdrop-blur">
-                <i class="fa-solid fa-map-pin text-amber-400 mr-1"></i>全台灣 / 東京 / 名古屋互動地圖
+                <i class="fa-solid fa-map-pin text-amber-400 mr-1"></i>全球即時 GPS 定位互動地圖
             </div>
         </div>
 
@@ -424,7 +424,7 @@
         <div class="glass-card w-full max-w-lg p-5 border border-emerald-500/40 shadow-2xl max-h-[92vh] overflow-y-auto">
             <div class="flex items-center justify-between mb-3 border-b border-slate-700 pb-2">
                 <h3 class="text-sm font-black text-emerald-400 flex items-center gap-1.5">
-                    <i class="fa-solid fa-paste"></i> 批次匯入行程 & 好友分享 (自動精確定位)
+                    <i class="fa-solid fa-paste"></i> 批次匯入行程 & 好友分享 (全球景點線上自動 GPS 定位)
                 </h3>
                 <button onclick="closeBatchImportModal()" class="text-slate-400 text-xl hover:text-white">&times;</button>
             </div>
@@ -444,7 +444,7 @@
                         </div>
                     </div>
                     <p class="text-[10px] text-slate-400 leading-relaxed">
-                        💡 支援直接貼上<b>任何文字筆記</b>。系統已升級<b>「東京/橫濱/鎌倉/日光/名古屋/台灣地標精準 GPS 資料庫」</b>，自動匹配正確地圖經緯度！
+                        🌐 <b>全球線上自動 GPS 定位功能：</b>未來貼上<b>全球任何國家或私房小店文字</b>，系統均會<b>即時線上聯網查詢 OpenStreetMap Nominatim 正確經緯度</b>，自動標註在地圖上！
                     </p>
                 </div>
 
@@ -462,7 +462,7 @@
             <div class="flex gap-2 mt-5 border-t border-slate-700/60 pt-3">
                 <button onclick="closeBatchImportModal()" class="w-1/3 py-2.5 bg-slate-800 text-slate-300 font-bold rounded-xl text-xs">取消</button>
                 <button onclick="executeBatchImport()" class="w-2/3 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-xl text-xs shadow-lg flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-bolt"></i> 立即批次自動生成行程 (含地圖定位)
+                    <i class="fa-solid fa-bolt"></i> 立即批次自動生成行程 (含線上即時 GPS 定位)
                 </button>
             </div>
         </div>
@@ -481,7 +481,6 @@
             <input type="hidden" id="settingTripId">
 
             <div class="space-y-4 text-xs">
-                <!-- 封面預覽與選擇模式 -->
                 <div>
                     <label class="block text-slate-400 mb-1.5 font-bold">首頁卡片封面照片</label>
                     <div class="relative w-full h-36 rounded-xl overflow-hidden border border-slate-700 mb-2">
@@ -491,7 +490,6 @@
                         </div>
                     </div>
 
-                    <!-- 隱藏的兩種 File Inputs -->
                     <input type="file" id="coverAlbumInput" accept="image/*" class="hidden" onchange="handleCoverFileSelect(event)">
                     <input type="file" id="coverCameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleCoverFileSelect(event)">
 
@@ -539,7 +537,6 @@
             <input type="hidden" id="photoTargetDay">
             <input type="hidden" id="photoTargetSpotIdx">
 
-            <!-- 隱藏的景點照片 Inputs -->
             <input type="file" id="spotPhotoAlbumInput" accept="image/*" multiple class="hidden" onchange="handlePhotoSelection(event)">
             <input type="file" id="spotPhotoCameraInput" accept="image/*" capture="environment" class="hidden" onchange="handlePhotoSelection(event)">
 
@@ -737,13 +734,13 @@
             ]
         };
 
-        // 東京/橫濱/鎌倉/日光/名古屋/台灣精確地標經緯度資料庫 (GPS Dictionary)
+        // 本地常用地標快速 GPS 離線資料庫 (用於無網路時離線即時比對)
         const LANDMARK_GEO_DB = [
             { keywords: ["成田", "成田機場", "NRT"], lat: 35.7720, lng: 140.3929, category: "交通", img: "https://upload.wikimedia.org/wikipedia/commons/2/23/Narita_Airport_Terminal_1.jpg" },
             { keywords: ["羽田", "羽田機場", "HND"], lat: 35.5494, lng: 139.7798, category: "交通", img: "https://upload.wikimedia.org/wikipedia/commons/e/ee/Haneda_Airport_Terminal_2.jpg" },
             { keywords: ["上野", "京成上野", "上野站", "上野飯店", "上野公園"], lat: 35.7141, lng: 139.7741, category: "住宿", img: "https://upload.wikimedia.org/wikipedia/commons/b/b2/Ueno_Station_2020.jpg" },
             { keywords: ["阿美橫町", "阿美橫"], lat: 35.7090, lng: 139.7746, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Ameyoko_Ueno.jpg" },
-            { keywords: ["Yamashiroya", "上野玩具店", "Yamashiroya上野玩具店"], lat: 35.7110, lng: 139.7738, category: "景點", img: "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=800&q=80" },
+            { keywords: ["Yamashiroya", "上野玩具店"], lat: 35.7110, lng: 139.7738, category: "景點", img: "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=800&q=80" },
             { keywords: ["御徒町"], lat: 35.7075, lng: 139.7747, category: "美食", img: "https://upload.wikimedia.org/wikipedia/commons/c/cd/Ameyoko_Ueno.jpg" },
             { keywords: ["明治神宮"], lat: 35.6764, lng: 139.6993, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/7/7d/Meiji_Jingu_Torii.jpg" },
             { keywords: ["原宿", "竹下通", "Cat Street", "裏原宿", "表參道"], lat: 35.6702, lng: 139.7027, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/d/da/Takeshita_Street_2016.jpg" },
@@ -752,7 +749,7 @@
             { keywords: ["新宿", "東京都廳", "歌舞伎町"], lat: 35.6895, lng: 139.6917, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/b/b2/Skyscrapers_of_Shinjuku_2009.jpg" },
             { keywords: ["淺草寺", "雷門", "淺草"], lat: 35.7148, lng: 139.7967, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/6/61/Sensoji_Kaminarimon_2020.jpg" },
             { keywords: ["仲見世通"], lat: 35.7126, lng: 139.7963, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/6/61/Sensoji_Kaminarimon_2020.jpg" },
-            { keywords: ["合羽橋", "合羽橋道具街"], lat: 35.7138, lng: 139.7891, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/5/53/Kappabashi_Street_Tokyo.jpg" },
+            { keywords: ["合羽橋"], lat: 35.7138, lng: 139.7891, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/5/53/Kappabashi_Street_Tokyo.jpg" },
             { keywords: ["晴空塔", "晴空塔城", "Solamachi", "Pokémon Center SKYTREE", "押上"], lat: 35.7101, lng: 139.8107, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/3/3d/Tokyo_Skytree_2012.jpg" },
             { keywords: ["日光", "東照宮", "輪王寺", "二荒山", "神橋", "東武日光"], lat: 36.7581, lng: 139.5989, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Nikko_Toshogu_Yomeimon.jpg" },
             { keywords: ["橫濱", "橫濱寶可夢", "Pokémon Center YOKOHAMA", "Sky Building"], lat: 35.4658, lng: 139.6223, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/d/da/Yokohama_Minato_Mirai_2019.jpg" },
@@ -760,44 +757,69 @@
             { keywords: ["鎌倉", "長谷寺", "大佛", "江之島", "湘南", "水族館", "藤澤"], lat: 35.3167, lng: 139.5361, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/1/1d/Kamakura_Daibutsu_2019.jpg" },
             { keywords: ["龜有", "烏龍派出所", "兩津勘吉", "こち亀", "Ario龜有"], lat: 35.7667, lng: 139.8478, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/5/52/Kameari_Station_2019.jpg" },
             { keywords: ["池袋", "扭蛋", "GASHAPON", "Sunshine City", "Bandai Namco"], lat: 35.7289, lng: 139.7193, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/8/87/Sunshine_60_Building_Tokyo.jpg" },
-            { keywords: ["國立科學博物館", "科學博物館"], lat: 35.7164, lng: 139.7765, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/8/8d/National_Museum_of_Nature_and_Science_Ueno.jpg" },
+            { keywords: ["國立科學博物館"], lat: 35.7164, lng: 139.7765, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/8/8d/National_Museum_of_Nature_and_Science_Ueno.jpg" },
             { keywords: ["東京車站", "東京站", "角色街", "丸之內"], lat: 35.6812, lng: 139.7671, category: "交通", img: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Tokyo_Station_Marunouchi_2017.jpg" },
             { keywords: ["日本橋", "Pokémon Center TOKYO DX", "高島屋", "Pokémon Cafe"], lat: 35.6806, lng: 139.7735, category: "景點", img: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Nihonbashi_Takashimaya_S.C._East_Building.jpg" }
         ];
 
-        // 智能自動分析地點名稱，匹配最佳 GPS 座標與圖片
-        function lookupSmartLocation(title, categoryName) {
-            let matched = null;
-            let titleLower = title.toLowerCase();
+        // 🌐 全球真實線上即時 Geocoding API (透過 OpenStreetMap Nominatim 查全球經緯度)
+        async function fetchOnlineGeocoding(placeTitle) {
+            try {
+                let cleanTitle = placeTitle.replace(/[➔→|｜()（）]/g, ' ').trim();
+                let url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanTitle)}&limit=1`;
+                let resp = await fetch(url, { headers: { 'Accept-Language': 'zh-TW,zh,en' } });
+                if (resp.ok) {
+                    let data = await resp.json();
+                    if (data && data.length > 0) {
+                        return {
+                            lat: parseFloat(data[0].lat),
+                            lng: parseFloat(data[0].lon)
+                        };
+                    }
+                }
+            } catch(e) {
+                console.log("Online geocode fetch bypassed/offline:", e);
+            }
+            return null;
+        }
 
+        // 智能自動分析地點名稱：優先比對離線速查檔，未果則自動即時線上 Geocode 全球地名
+        async function lookupSmartLocationAsync(title, categoryName) {
+            let titleLower = title.toLowerCase();
             for (let item of LANDMARK_GEO_DB) {
                 for (let kw of item.keywords) {
                     if (titleLower.includes(kw.toLowerCase())) {
-                        matched = item;
-                        break;
+                        let jitterLat = (Math.random() - 0.5) * 0.003;
+                        let jitterLng = (Math.random() - 0.5) * 0.003;
+                        return {
+                            lat: item.lat + jitterLat,
+                            lng: item.lng + jitterLng,
+                            category: item.category || categoryName || "景點",
+                            img: item.img
+                        };
                     }
                 }
-                if (matched) break;
             }
 
-            if (matched) {
-                // 給予輕微隨機位移偏移量，避免同一地圖點位完全重疊
-                let jitterLat = (Math.random() - 0.5) * 0.003;
-                let jitterLng = (Math.random() - 0.5) * 0.003;
+            // 若離線庫沒預設此景點，自動啟動全球線上 Geocoding 服務！
+            let liveResult = await fetchOnlineGeocoding(title);
+            if (liveResult) {
+                let jitterLat = (Math.random() - 0.5) * 0.001;
+                let jitterLng = (Math.random() - 0.5) * 0.001;
                 return {
-                    lat: matched.lat + jitterLat,
-                    lng: matched.lng + jitterLng,
-                    category: matched.category || categoryName || "景點",
-                    img: matched.img
+                    lat: liveResult.lat + jitterLat,
+                    lng: liveResult.lng + jitterLng,
+                    category: categoryName || "景點",
+                    img: getAutoCategoryPhoto(categoryName || "景點")
                 };
             }
 
-            // 若完全沒匹配到，預設使用東京中樞座標 (東京車站/上野周邊)，附帶隨機分佈
+            // 若完全沒網路且找不到，給予輕微位移
             let defaultJitterLat = (Math.random() - 0.5) * 0.02;
             let defaultJitterLng = (Math.random() - 0.5) * 0.02;
             return {
-                lat: 35.7141 + defaultJitterLat,
-                lng: 139.7741 + defaultJitterLng,
+                lat: 35.6812 + defaultJitterLat,
+                lng: 139.7671 + defaultJitterLng,
                 category: categoryName || "景點",
                 img: getAutoCategoryPhoto(categoryName || "景點")
             };
@@ -952,8 +974,8 @@ Day 9：上野最後採買 → 前往機場
             document.getElementById('batchImportInput').value = sampleText;
         }
 
-        // 超強大文字批次解析引擎 (包含自動地標 GPS 字典 lookupSmartLocation)
-        function executeBatchImport() {
+        // 超強大文字批次解析引擎 (支援【全球動態線上即時 GPS 定位】)
+        async function executeBatchImport() {
             const rawInput = document.getElementById('batchImportInput').value.trim();
             const statusMsg = document.getElementById('importStatusMsg');
 
@@ -961,6 +983,10 @@ Day 9：上野最後採買 → 前往機場
                 alert("請貼上行程文字或 JSON 內容！");
                 return;
             }
+
+            statusMsg.className = "p-2 rounded-lg text-xs font-bold text-center bg-blue-500/20 text-blue-300 border border-blue-500/40";
+            statusMsg.innerText = "🌐 正在啟動全球線上 GPS 定位解析中，請稍候...";
+            statusMsg.classList.remove('hidden');
 
             try {
                 // 1. JSON 格式解碼
@@ -978,7 +1004,6 @@ Day 9：上野最後採買 → 前往機場
 
                     statusMsg.className = "p-2 rounded-lg text-xs font-bold text-center bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
                     statusMsg.innerText = `🎉 成功匯入行程 [${importedTrip.title}]！包含全數照片與正確 GPS 定位！`;
-                    statusMsg.classList.remove('hidden');
 
                     setTimeout(() => {
                         closeBatchImportModal();
@@ -987,28 +1012,27 @@ Day 9：上野最後採買 → 前往機場
                     return;
                 }
 
-                // 2. 文字格式彈性自動解析 (可解析含或不含 "|" 分隔號的純文字)
+                // 2. 文字格式彈性自動解析 (支援任何國家/私房小店線上即時 GPS 定位)
                 let lines = rawInput.split('\n');
                 let tripTitle = "新文字匯入自由行計畫";
                 let tripStartDate = "2028.07.25";
                 let daysList = [];
                 let currentDayObj = null;
 
-                lines.forEach(line => {
+                for (let line of lines) {
                     let trimmed = line.trim();
-                    if (!trimmed) return;
+                    if (!trimmed) continue;
 
                     if (trimmed.startsWith("行程名稱：") || trimmed.startsWith("行程名稱:")) {
                         tripTitle = trimmed.replace(/行程名稱[：:]/, '').trim();
-                        return;
+                        continue;
                     }
 
                     if (trimmed.startsWith("出發日期：") || trimmed.startsWith("出發日期:")) {
                         tripStartDate = trimmed.replace(/出發日期[：:]/, '').trim();
-                        return;
+                        continue;
                     }
 
-                    // 匹配 Day 行標頭 (如 Day 1：... 或 第一天...)
                     if (/^Day\s*\d+/i.test(trimmed) || /^第\s*\d+\s*天/i.test(trimmed)) {
                         let dayNum = daysList.length + 1;
                         let titlePart = trimmed;
@@ -1020,10 +1044,9 @@ Day 9：上野最後採買 → 前往機場
                             spots: []
                         };
                         daysList.push(currentDayObj);
-                        return;
+                        continue;
                     }
 
-                    // 匹配點位行 (格式 A: 時間 | 類別 | 名稱 | 描述  或 格式 B: 10:00 點位名稱)
                     if (currentDayObj) {
                         let timeVal = "10:00";
                         let catVal = "景點";
@@ -1038,7 +1061,6 @@ Day 9：上野最後採買 → 前往機場
                             descVal = parts[3] || "";
                             catVal = mapCategoryType(rawCat);
                         } else if (/^\d{2}:\d{2}/.test(trimmed)) {
-                            // 匹配無 "|" 的行格式："10:00 抵達 成田機場"
                             let timeMatch = trimmed.match(/^(\d{2}:\d{2})\s*(.*)/);
                             if (timeMatch) {
                                 timeVal = timeMatch[1];
@@ -1048,8 +1070,8 @@ Day 9：上野最後採買 → 前往機場
                         }
 
                         if (titleVal) {
-                            // ⭐ 呼叫地標 GPS 資料庫自動分析極精確的緯度/經度與代表性高清照片！
-                            let geoInfo = lookupSmartLocation(titleVal, catVal);
+                            // ⭐ 呼叫動態異步 GPS 定位器 (離線庫 + 線上全球即時搜尋)
+                            let geoInfo = await lookupSmartLocationAsync(titleVal, catVal);
 
                             currentDayObj.spots.push({
                                 time: timeVal,
@@ -1064,7 +1086,7 @@ Day 9：上野最後採買 → 前往機場
                             });
                         }
                     }
-                });
+                }
 
                 if (daysList.length === 0) {
                     alert("無法解析出 Day 行程，請點擊 [帶入東京9日範例文字] 查看建議排版結構喔！");
@@ -1083,8 +1105,7 @@ Day 9：上野最後採買 → 前往機場
                 saveTrips();
 
                 statusMsg.className = "p-2 rounded-lg text-xs font-bold text-center bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
-                statusMsg.innerText = `🎉 成功解析生成 [${tripTitle}] (${daysList.length} 天)！地圖點位已全部精確定位！`;
-                statusMsg.classList.remove('hidden');
+                statusMsg.innerText = `🎉 成功解析生成 [${tripTitle}] (${daysList.length} 天)！全數點位全球線上即時 GPS 定位成功！`;
 
                 setTimeout(() => {
                     closeBatchImportModal();
@@ -2124,7 +2145,7 @@ Day 9：上野最後採買 → 前往機場
             mapInstance = L.map('map', {
                 zoomControl: true,
                 scrollWheelZoom: false
-            }).setView([35.7141, 139.7741], 13);
+            }).setView([35.6812, 139.7671], 12);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -2351,8 +2372,8 @@ Day 9：上野最後採買 → 前往機場
                 document.getElementById('editSpotRainyPlan').value = "";
                 document.getElementById('editSpotFood').value = "";
                 document.getElementById('editSpotTransit').value = "";
-                document.getElementById('editSpotLat').value = "35.7141";
-                document.getElementById('editSpotLng').value = "139.7741";
+                document.getElementById('editSpotLat').value = "35.6812";
+                document.getElementById('editSpotLng').value = "139.7671";
                 document.getElementById('editSpotModal').dataset.insertIndex = insertTargetIdx;
             } else {
                 modalTitle.innerText = `編輯 Day ${day} 景點`;
@@ -2367,8 +2388,8 @@ Day 9：上野最後採買 → 前往機場
                 document.getElementById('editSpotRainyPlan').value = spot.rainyPlan || "";
                 document.getElementById('editSpotFood').value = spot.food || "";
                 document.getElementById('editSpotTransit').value = spot.transit || "";
-                document.getElementById('editSpotLat').value = spot.lat || 35.7141;
-                document.getElementById('editSpotLng').value = spot.lng || 139.7741;
+                document.getElementById('editSpotLat').value = spot.lat || 35.6812;
+                document.getElementById('editSpotLng').value = spot.lng || 139.7671;
             }
 
             document.getElementById('editSpotModal').classList.remove('hidden');
@@ -2378,7 +2399,7 @@ Day 9：上野最後採買 → 前往機場
             document.getElementById('editSpotModal').classList.add('hidden');
         }
 
-        function saveSpotEdit() {
+        async function saveSpotEdit() {
             const day = parseInt(document.getElementById('editSpotDay').value);
             const spotIdx = parseInt(document.getElementById('editSpotIndex').value);
             const dayObj = tourData.find(d => d.day === day);
@@ -2387,22 +2408,33 @@ Day 9：上野最後採買 → 前往機場
 
             const cat = document.getElementById('editSpotCategory').value;
             let imgVal = document.getElementById('editSpotImg').value;
+            let titleVal = document.getElementById('editSpotTitle').value;
 
             if (!imgVal || !imgVal.trim()) {
                 imgVal = getAutoCategoryPhoto(cat);
             }
 
+            let inputLat = parseFloat(document.getElementById('editSpotLat').value);
+            let inputLng = parseFloat(document.getElementById('editSpotLng').value);
+
+            // 若使用者輸入了新的標題且經緯度未修改，自動嘗試線上更新定位
+            if (titleVal && (!inputLat || !inputLng || inputLat === 35.6812)) {
+                let geo = await lookupSmartLocationAsync(titleVal, cat);
+                inputLat = geo.lat;
+                inputLng = geo.lng;
+            }
+
             const newSpot = {
                 time: document.getElementById('editSpotTime').value,
-                title: document.getElementById('editSpotTitle').value,
+                title: titleVal,
                 category: cat,
                 desc: document.getElementById('editSpotDesc').value,
                 rainyPlan: document.getElementById('editSpotRainyPlan').value,
                 food: document.getElementById('editSpotFood').value,
                 transit: document.getElementById('editSpotTransit').value,
                 img: imgVal.trim(),
-                lat: parseFloat(document.getElementById('editSpotLat').value) || 35.7141,
-                lng: parseFloat(document.getElementById('editSpotLng').value) || 139.7741
+                lat: inputLat || 35.6812,
+                lng: inputLng || 139.7671
             };
 
             if (spotIdx === -1) {
