@@ -213,9 +213,14 @@
                     <span>首頁</span>
                 </button>
 
+                <!-- 使用教學按鈕 -->
+                <button onclick="openTutorialModal()" title="使用教學與手機下載" class="px-2 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 hover:bg-amber-500 hover:text-slate-950 border border-amber-500/40 text-xs font-bold transition flex items-center gap-1">
+                    <i class="fa-solid fa-circle-question"></i> 使用教學
+                </button>
+
                 <!-- 批次匯入/好友行程分享按鈕 -->
                 <button onclick="openBatchImportModal()" title="文字/JSON批次匯入行程" class="px-2 py-1.5 rounded-xl bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white border border-emerald-500/40 text-xs font-bold transition flex items-center gap-1">
-                    <i class="fa-solid fa-file-import"></i> 批次匯入
+                    <i class="fa-solid fa-file-import"></i> 匯入
                 </button>
 
                 <!-- 統一編輯模式按鈕 -->
@@ -3374,7 +3379,78 @@ Day 9：上野最後採買 → 前往機場
             }
             window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
         }
+
+        /* 使用教學 Modal 控制函式 */
+        function openTutorialModal() {
+            const modal = document.getElementById('tutorialModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+        function closeTutorialModal() {
+            const modal = document.getElementById('tutorialModal');
+            if (modal) modal.classList.add('hidden');
+        }
     </script>
+
+    <!-- ==================== TUTORIAL MODAL (使用教學與離線下載) ==================== -->
+    <div id="tutorialModal" class="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-lg max-h-[85vh] overflow-y-auto p-5 border-amber-500/40 shadow-2xl relative space-y-4">
+            <button onclick="closeTutorialModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center gap-2.5 border-b border-slate-700/80 pb-3">
+                <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg font-black shrink-0 border border-amber-500/40">
+                    📖
+                </div>
+                <div>
+                    <h3 class="text-base font-black text-white">APP 使用教學與手機離線下載指南</h3>
+                    <p class="text-xs text-amber-400 font-medium">包含 100% 離線安裝、iCloud 備份與好友分享教學</p>
+                </div>
+            </div>
+
+            <!-- 教學分頁卡片 1：手機 100% 離線安裝 APP -->
+            <div class="bg-slate-900/90 border border-amber-500/30 rounded-xl p-4 space-y-2">
+                <h4 class="text-sm font-bold text-amber-300 flex items-center gap-2">
+                    <i class="fa-solid fa-mobile-screen-button text-amber-400"></i> 1. 如何下載到 iPhone 永遠離線使用？
+                </h4>
+                <ol class="list-decimal list-inside text-xs text-slate-300 space-y-1.5 leading-relaxed">
+                    <li>雙擊電腦資料夾內的 <span class="text-amber-300 font-mono font-bold">點我下載到手機離線.bat</span> 啟動通道。</li>
+                    <li>iPhone 用 <span class="text-white font-bold">Safari 瀏覽器</span> 開啟電腦顯示的 <span class="text-amber-300 font-mono">https://</span> 加密網址。</li>
+                    <li>點擊 Safari 螢幕底部 <span class="text-white font-bold">「分享按鈕 📤」 ➔ 「加入主畫面」</span>。</li>
+                    <li>完成！手機桌面上會出現獨立 APP，此時即可關閉電腦。在日本飛航模式、無網路時點桌面 APP 100% 秒開離線使用！</li>
+                </ol>
+            </div>
+
+            <!-- 教學分頁卡片 2：iCloud 雲端備份與還原 -->
+            <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-4 space-y-2">
+                <h4 class="text-sm font-bold text-rose-300 flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-rose-400"></i> 2. 如何上傳備份至 iCloud 雲端硬碟？
+                </h4>
+                <ol class="list-decimal list-inside text-xs text-slate-300 space-y-1.5 leading-relaxed">
+                    <li>在 APP 中點擊 <span class="text-white font-bold">「紀念冊」</span> 頁面內頂部的 <span class="text-amber-300 font-bold">「💾 匯出備份 (JSON)」</span> 按鈕。</li>
+                    <li>iPhone 會彈出儲存選單，選擇儲存至 <span class="text-white font-bold">「檔案 (Files)」App ➔ 「iCloud 雲端硬碟」</span>。</li>
+                    <li>換新手機或重裝 APP 時，點擊 <span class="text-emerald-400 font-bold">「📥 匯入紀錄」</span> 選取該 JSON 檔即可瞬間復原所有照片與筆記！</li>
+                </ol>
+            </div>
+
+            <!-- 教學分頁卡片 3：匯出與分享給親友 -->
+            <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-4 space-y-2">
+                <h4 class="text-sm font-bold text-emerald-300 flex items-center gap-2">
+                    <i class="fa-solid fa-share-nodes text-emerald-400"></i> 3. 如何分享行程與照片給同行好友？
+                </h4>
+                <ul class="list-disc list-inside text-xs text-slate-300 space-y-1.5 leading-relaxed">
+                    <li><span class="text-white font-bold">分享獨立網址</span>：把電腦產生的 HTTPS 網址發到 Line，親友用 Safari 打開點「加入主畫面」也可取得一模一樣的 APP。</li>
+                    <li><span class="text-white font-bold">分享照片與日記</span>：點擊 <span class="text-emerald-400 font-bold">「📸 匯出相本 (HTML)」</span> 傳給朋友，朋友打開就能直接瀏覽精美的相片故事書！</li>
+                </ul>
+            </div>
+
+            <div class="pt-2 text-center">
+                <button onclick="closeTutorialModal()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-lg hover:brightness-110">
+                    我明白了，關閉教學
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Service Worker 註冊 (100% 本地 PWA 離線快取) -->
     <script>
