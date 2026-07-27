@@ -2517,11 +2517,15 @@ Day 9：上野最後採買 → 前往機場
 
         async function compressImageFileForStorage(file, target = 'spot') {
             const config = await getCurrentPhotoStorageConfig(target);
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '');
+            const widthScale = isIOS ? 0.85 : 1;
+            const heightScale = isIOS ? 0.85 : 1;
+            const qualityScale = isIOS ? 0.88 : 1;
             return compressAndReadImage(
                 file,
-                config.options.maxWidth,
-                config.options.maxHeight,
-                config.options.quality
+                Math.round(config.options.maxWidth * widthScale),
+                Math.round(config.options.maxHeight * heightScale),
+                Math.max(0.32, Number(config.options.quality) * qualityScale)
             );
         }
 
@@ -2547,6 +2551,49 @@ Day 9：上野最後採買 → 前往機場
             } catch (error) {
                 return null;
             }
+        }
+
+        async function requestPersistentStorageIfAvailable() {
+            if (!navigator.storage?.persist) return false;
+            try {
+                return await navigator.storage.persist();
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function buildPhotoRecordForDb(imgData, note, mode = 'normal') {
+            if (!imgData) {
+                return { image: '', thumb: '', note };
+            }
+            if (mode === 'ultra') {
+                return {
+                    image: await compressBase64Image(imgData, 880, 880, 0.42),
+                    thumb: await compressBase64Image(imgData, 220, 220, 0.36),
+                    note
+                };
+            }
+            return {
+                image: imgData,
+                thumb: await compressBase64Image(imgData, 360, 360, 0.5),
+                note
+            };
+        }
+
+        async function addPhotoRecordToDb(payload) {
+            if (!photoDB) return false;
+            return new Promise(resolve => {
+                try {
+                    const tx = photoDB.transaction('photos', 'readwrite');
+                    const store = tx.objectStore('photos');
+                    store.add(payload);
+                    tx.oncomplete = () => resolve(true);
+                    tx.onerror = () => resolve(false);
+                    tx.onabort = () => resolve(false);
+                } catch (error) {
+                    resolve(false);
+                }
+            });
         }
 
         async function replaceAllImportedPhotos(photoRecords) {
@@ -4663,6 +4710,14 @@ Day 9：上野最後採買 → 前往機場
             });
         }
 
+        function isQuotaExceededError(error) {
+            if (!error) return false;
+            return error.name === 'QuotaExceededError'
+                || error.name === 'NS_ERROR_DOM_QUOTA_REACHED'
+                || error.code === 22
+                || error.code === 1014;
+        }
+
         function saveTrips() {
             if (isStandaloneTripApp && standaloneBootstrap) {
                 standaloneBootstrap.trip = getActiveTripObj();
@@ -4673,8 +4728,15 @@ Day 9：上野最後採買 → 前往機場
                 activeTrip.updatedAt = new Date().toISOString();
             }
             sortTripsByDate();
-            localStorage.setItem("all_user_travel_trips", JSON.stringify(allTrips));
-            localStorage.setItem("last_active_trip_id", activeTripId);
+            try {
+                localStorage.setItem("all_user_travel_trips", JSON.stringify(allTrips));
+                localStorage.setItem("last_active_trip_id", activeTripId);
+            } catch (error) {
+                if (isQuotaExceededError(error)) {
+                    showToast('本機資料已接近上限，請先做備份或減少封面/照片大小', 'error');
+                }
+                throw error;
+            }
             if (isStandaloneTripApp) {
                 registerStandaloneAppInHub();
             }
@@ -6200,6 +6262,7 @@ Day 9：上野最後採買 → 前往機場
             loadTrips();
             loadToolkitData();
             await initPhotoDB();
+            await requestPersistentStorageIfAvailable();
             if (isStandaloneTripApp && standaloneBootstrap) {
                 const photoSeedKey = `standalone_seeded_${activeTripId}`;
                 if (!localStorage.getItem(photoSeedKey)) {
@@ -6860,6 +6923,7 @@ Day 9：上野最後採買 → 前往機場
         }
 
         let tempBase64Images = [];
+        const PHOTO_BATCH_LIMIT = 12;
 
         function openPhotoModal(day, spotIdx, spotTitle) {
             document.getElementById('photoTargetDay').value = day;
@@ -6951,15 +7015,25 @@ Day 9：上野最後採買 → 前往機場
             const container = document.getElementById('photoPreviewContainer');
 
             if (!files || files.length === 0) return;
+            if (files.length > PHOTO_BATCH_LIMIT) {
+                alert(`一次最多先處理 ${PHOTO_BATCH_LIMIT} 張照片，請分批儲存，成功率會高很多。`);
+                e.target.value = '';
+                return;
+            }
 
             container.classList.remove('hidden');
             container.innerHTML = '<div class="text-xs text-amber-400 font-bold p-3 text-center col-span-full">📸 照片處理與最佳化壓縮中，請稍候...</div>';
             isProcessingPhotos = true;
 
             try {
-                const promises = Array.from(files).map(file => compressImageFileForStorage(file, 'spot'));
-                const compressedBase64s = await Promise.all(promises);
-                
+                container.innerHTML = '';
+                const compressedBase64s = [];
+                for (let index = 0; index < files.length; index += 1) {
+                    container.innerHTML = `<div class="text-xs text-amber-400 font-bold p-3 text-center col-span-full">📸 正在處理第 ${index + 1} / ${files.length} 張...</div>`;
+                    const base64 = await compressImageFileForStorage(files[index], 'spot');
+                    compressedBase64s.push(base64);
+                }
+
                 container.innerHTML = '';
                 compressedBase64s.forEach(base64 => {
                     tempBase64Images.push(base64);
@@ -7078,11 +7152,14 @@ Day 9：上野最後採買 → 前往機場
             if (tempBase64Images.length > 0) {
                 const dayObj = tourData.find(d => d.day === day);
                 if (dayObj && dayObj.spots[spotIdx]) {
+                    const originalCover = dayObj.spots[spotIdx].img;
                     try {
-                        dayObj.spots[spotIdx].img = await compressBase64Image(tempBase64Images[0]);
+                        dayObj.spots[spotIdx].img = await compressBase64Image(tempBase64Images[0], 180, 180, 0.34);
                         saveTrips();
                     } catch (coverErr) {
+                        dayObj.spots[spotIdx].img = originalCover;
                         console.warn("Spot cover thumbnail save failed:", coverErr);
+                        showToast('封面縮圖未能寫入本機，但仍會繼續嘗試儲存照片資料', 'info');
                     }
                 }
             }
@@ -7103,36 +7180,46 @@ Day 9：上野最後採買 → 前往機場
 
             if (photoDB) {
                 try {
-                    const tx = photoDB.transaction('photos', 'readwrite');
-                    const store = tx.objectStore('photos');
-
-                    const photoRecords = tempBase64Images.length > 0
-                        ? await Promise.all(tempBase64Images.map(async imgData => ({
-                            image: imgData,
-                            thumb: await compressBase64Image(imgData, 360, 360, 0.5),
-                            note: note
-                        })))
-                        : [{ image: '', note: note }];
-
-                    for (let record of photoRecords) {
-                        store.add({
+                    let savedCount = 0;
+                    const sourceImages = tempBase64Images.length > 0 ? tempBase64Images : [''];
+                    for (const imgData of sourceImages) {
+                        const normalRecord = await buildPhotoRecordForDb(imgData, note, 'normal');
+                        const basePayload = {
                             tripId: activeTripId,
                             spotKey: spotKey,
                             day: day,
                             spotIdx: spotIdx,
                             spotTitle: spotTitle,
-                            image: record.image,
-                            thumb: record.thumb || '',
-                            note: record.note,
+                            note: normalRecord.note,
                             date: new Date().toLocaleDateString('zh-TW', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                        };
+
+                        let saveResult = await addPhotoRecordToDb({
+                            ...basePayload,
+                            image: normalRecord.image,
+                            thumb: normalRecord.thumb || ''
                         });
+
+                        if (!saveResult && imgData) {
+                            const ultraRecord = await buildPhotoRecordForDb(imgData, note, 'ultra');
+                            saveResult = await addPhotoRecordToDb({
+                                ...basePayload,
+                                image: ultraRecord.image,
+                                thumb: ultraRecord.thumb || ''
+                            });
+                        }
+
+                        if (!saveResult) break;
+                        savedCount += 1;
                     }
 
-                    tx.oncomplete = () => finalizeSave();
-                    tx.onerror = function(e) {
-                        console.error("IndexedDB error:", e);
-                        alert("照片儲存失敗，可能是手機儲存空間不足，或這批照片仍然太大。請改少一點張數，或重新選擇照片再試一次。");
-                    };
+                    if (savedCount === sourceImages.length) {
+                        finalizeSave();
+                    } else if (savedCount > 0) {
+                        finalizeSave(`⚠️ 只成功儲存 ${savedCount} 張，其餘照片可能因手機可用空間或瀏覽器上限而失敗，建議改成更少張分批存。`);
+                    } else {
+                        alert("照片儲存失敗。系統已自動改用更小尺寸重試仍未成功，通常代表目前這台 iPhone 的 Web App 可用儲存空間或資料庫狀態有問題。建議先做備份、重開 App，再一次只存 1 到 2 張測試。");
+                    }
                 } catch(e) {
                     console.warn("IndexedDB Exception:", e);
                     alert("照片儲存失敗，可能是手機暫存空間不足或資料庫忙碌中，請稍後再試。");
