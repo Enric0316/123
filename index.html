@@ -7264,12 +7264,26 @@ Day 9：上野最後採買 → 前往機場
             if (photos && photos.length > 0) {
                 grid.innerHTML = '';
                 photos.filter(p => p.image).forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'relative';
                     const img = document.createElement('img');
                     img.src = p.thumb || p.image;
                     img.loading = 'lazy';
                     img.className = 'w-full h-20 object-cover rounded-lg border border-amber-500/40 cursor-pointer shadow hover:scale-105 transition';
                     img.onclick = () => openLightbox(p.image, `${p.spotTitle} - ${p.note || ''}`);
-                    grid.appendChild(img);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'absolute top-1 right-1 w-6 h-6 rounded-full bg-rose-600/90 text-white text-[10px] border border-white/20 shadow';
+                    deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                    deleteBtn.onclick = (event) => {
+                        event.stopPropagation();
+                        deletePhotoRecordById(p.id, day, spotIdx);
+                    };
+
+                    card.appendChild(img);
+                    card.appendChild(deleteBtn);
+                    grid.appendChild(card);
                 });
                 if (grid.innerHTML.trim()) {
                     container.classList.remove('hidden');
@@ -7310,7 +7324,12 @@ Day 9：上野最後採買 → 前往機場
                     card.innerHTML = `
                         <div class="flex items-center justify-between text-xs border-b border-slate-700/50 pb-2">
                             <span class="font-black text-amber-400">Day ${p.day}・${p.spotTitle}</span>
-                            <span class="text-[10px] text-slate-400">${p.date}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-slate-400">${p.date}</span>
+                                <button type="button" onclick="deletePhotoRecordById(${p.id}, ${p.day}, ${p.spotIdx}, true)" class="w-7 h-7 rounded-full bg-rose-600/90 text-white text-[10px] border border-white/10 shadow">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
                         <img src="${p.thumb || p.image}" loading="lazy" class="w-full h-48 object-cover rounded-xl cursor-pointer border border-slate-700 shadow" onclick="openLightbox('${p.image}', 'Day ${p.day} ${p.spotTitle}: ${p.note || ''}')">
                         ${p.note ? `<p class="text-xs text-slate-200 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800 font-normal leading-relaxed">${p.note}</p>` : ''}
@@ -7327,6 +7346,42 @@ Day 9：上野最後採買 → 前往機場
         function loadMoreMemorialPhotos() {
             memorialPhotoVisibleCount += memorialPhotoBatchSize;
             renderMemorialGallery(false);
+        }
+
+        async function deletePhotoRecordById(recordId, day, spotIdx, fromMemorial = false) {
+            if (!photoDB || !recordId) return;
+            const ok = await openConfirmModal('刪除照片', '確定要刪除這張照片嗎？刪除後無法復原。');
+            if (!ok) return;
+
+            try {
+                const deleted = await new Promise(resolve => {
+                    try {
+                        const tx = photoDB.transaction('photos', 'readwrite');
+                        const store = tx.objectStore('photos');
+                        store.delete(recordId);
+                        tx.oncomplete = () => resolve(true);
+                        tx.onerror = () => resolve(false);
+                        tx.onabort = () => resolve(false);
+                    } catch (error) {
+                        resolve(false);
+                    }
+                });
+
+                if (!deleted) {
+                    showToast('刪除照片失敗，請稍後再試', 'error');
+                    return;
+                }
+
+                if (Number.isInteger(day) && Number.isInteger(spotIdx)) {
+                    loadSpotPhotos(day, spotIdx);
+                }
+                if (!document.getElementById('memorialView').classList.contains('hidden') || fromMemorial) {
+                    renderMemorialGallery(false);
+                }
+                showToast('已刪除照片', 'success');
+            } catch (error) {
+                showToast('刪除照片失敗，請稍後再試', 'error');
+            }
         }
 
         // ==================== 達人工具邏輯 (分帳、購物、打包) ====================
