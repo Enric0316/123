@@ -1,10 +1,7 @@
-const CACHE_NAME = 'travel-app-v2';
+const CACHE_NAME = 'travel-app-v5';
 const STATIC_ASSETS = [
   './',
   './index.html',
-  './2026_9.html',
-  './style.css',
-  './app.js',
   './manifest.json',
   './icon.png',
   'https://cdn.tailwindcss.com',
@@ -23,6 +20,12 @@ self.addEventListener('install', event => {
       });
     }).then(() => self.skipWaiting())
   );
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', event => {
@@ -71,7 +74,7 @@ self.addEventListener('fetch', event => {
       }).catch(err => {
         console.warn('[Service Worker] Fetch failed, device offline:', event.request.url);
         if (event.request.headers.get('accept')?.includes('text/html')) {
-          return caches.match('./index.html') || caches.match('./2026_9.html');
+          return caches.match('./index.html');
         }
       });
     })
